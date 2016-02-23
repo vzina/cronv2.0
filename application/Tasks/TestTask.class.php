@@ -1,6 +1,6 @@
 <?php
 /**
- * Test.class.php.
+ * TestTask.class.php.
  * Author: yeweijian
  * E-mail: yeweijian@hoolai.com
  * Date: 2016/2/19
