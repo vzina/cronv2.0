@@ -7,6 +7,7 @@
 + 完全兼容crontab语法，且支持秒的配置,可使用数组规定好精确操作时间
 + 请使用swoole扩展1.8.0-stable及以上版本.[Swoole](https://github.com/swoole/swoole-src)
 + 支持worker处理redis队列任务
++ 运用命名空间，基于[osgochina/swoole-crontab](https://github.com/osgochina/swoole-crontab)的二次开发。
 
 2.配置的支持
 --------------
