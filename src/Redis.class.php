@@ -25,7 +25,7 @@ class Redis
         if(is_array($name)){
             $config = $name;
         }else{
-            $config = \Main::config($name);
+            $config = (array)\Main::config($name);
         }
 
         if ($async_mode) {

@@ -1,5 +1,6 @@
 <?php
 namespace EasyCron\Worker;
+
 use EasyCron\TaskHandle;
 
 /**
@@ -11,45 +12,50 @@ use EasyCron\TaskHandle;
 abstract class WorkerBase
 {
 
-    private  $Redis;
-    private  $queue;
+    private $Redis;
+    private $queue;
     protected $worker;
-    private $ppid=0;
+    private $ppid = 0;
 
-    public function content($config){
+    public function content($config)
+    {
 
-        if(!isset($config["host"]) || !isset($config["port"]) || !isset($config["timeout"]) || !isset($config["queue"])){
-            \Main::log_write(vsprintf(" host=%s,port=%s,timeout=%s,queue=%s",$config));
+        if (!isset($config["host"]) || !isset($config["port"]) || !isset($config["timeout"]) || !isset($config["queue"])) {
+            \Main::log_write(vsprintf(" host=%s,port=%s,timeout=%s,queue=%s", $config));
             exit;
         }
 
-       $this->Redis = new \Redis();
-        if(!$this->Redis->pconnect($config["host"],$config["port"],isset($config["timeout"]))){
-            \Main::log_write(vsprintf("redis can't connect.host=%s,port=%s,timeout=%s",$config));
+        $this->Redis = new \Redis();
+        if (!$this->Redis->pconnect($config["host"], $config["port"], isset($config["timeout"]))) {
+            \Main::log_write(vsprintf("redis can't connect.host=%s,port=%s,timeout=%s", $config));
             exit;
         }
-        if(isset($config["db"]) && is_numeric($config["db"])){
+        if (isset($config["db"]) && is_numeric($config["db"])) {
             $this->Redis->select($config["db"]);
         }
         $this->queue = $config["queue"];
     }
 
-    public function getQueue(){
+    public function getQueue()
+    {
         return $this->Redis->rpop($this->queue);
     }
-    public function tick($worker){
+
+    public function tick($worker)
+    {
         $this->worker = $worker;
-        swoole_timer_tick(500, function() {
-            while(true){
+        swoole_timer_tick(500, function () {
+            while (true) {
                 $this->checkExit();
                 $task = $this->getQueue();
-                if(empty($task)){
+                if (empty($task)) {
                     break;
                 }
                 $this->Run($task);
             }
         });
     }
+
     protected function _exit()
     {
         $this->worker->exit(1);
@@ -58,12 +64,13 @@ abstract class WorkerBase
     /**
      * 判断父进程是否结束
      */
-    private function checkExit(){
+    protected function checkExit()
+    {
         $ppid = posix_getppid();
-        if($this->ppid == 0){
-            $this->ppid = $ppid ;
+        if ($this->ppid == 0) {
+            $this->ppid = $ppid;
         }
-        if($this->ppid != $ppid){
+        if ($this->ppid != $ppid) {
             $this->_exit();
         }
     }

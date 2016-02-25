@@ -12,10 +12,10 @@ namespace App\Tasks;
 
 use EasyCron\Async\Coroutine\EndTask;
 use EasyCron\DB;
+use EasyCron\Redis;
 
 class TestTask
 {
-
     /**
      * 异步任务处理
      * @param $worker
@@ -27,8 +27,10 @@ class TestTask
         echo $a, time(), PHP_EOL;
         $db = DB::instance();
         $data = (yield $db->queryOne('select * from documents where id=11'));
-        echo var_export($data, true), PHP_EOL;
-        yield new EndTask($worker);
+        /** @var \Redis $redis */
+        $redis = Redis::instance();
+        yield $redis->lPush('abc', json_encode($data),'exit');
+        echo 'runAsync send data!', PHP_EOL;
     }
 
     /**
@@ -38,11 +40,11 @@ class TestTask
      */
     public function runSync($worker, $a)
     {
-        echo $a, time();
+        echo $a, time(), PHP_EOL;
         $db = DB::instance('_db', false);
         $data = $db->queryOne('select * from documents');
-        echo var_export($data, true), PHP_EOL;
-        $worker->close();
-        return;
+        $redis = Redis::instance('_redis', false);
+        $redis->lPush('abc', json_encode($data),'exit');
+        echo 'runSync send data!', PHP_EOL;
     }
 }
